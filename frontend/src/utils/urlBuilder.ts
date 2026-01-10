@@ -10,6 +10,7 @@ export function buildStatsUrl(config: CardConfig): string {
   if (config.hide_border) params.append("hide_border", "true");
   if (config.show_icons) params.append("show_icons", "true");
   if (config.hide_rank) params.append("hide_rank", "true");
+  if (config.hide_title) params.append("hide_title", "true");
   if (config.include_all_commits) params.append("include_all_commits", "true");
   if (config.count_private) params.append("count_private", "true");
   

@@ -159,6 +159,10 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isSt
                 <input type="checkbox" checked={'hide_rank' in config ? !config.hide_rank : true} onChange={(e) => update('hide_rank', !e.target.checked)} />
                 <span>Show Rank</span>
               </label>
+              <label className="checkbox-wrapper">
+                <input type="checkbox" checked={'hide_title' in config ? !config.hide_title : true} onChange={(e) => update('hide_title', !e.target.checked)} />
+                <span>Show Title</span>
+              </label>
             </>
           )}
           

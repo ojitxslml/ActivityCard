@@ -46,9 +46,9 @@ export class GithubService {
       return stats;
     } catch (error) {
       if (error.response?.status === 404) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException('GitHub user not found. Please check the username.', HttpStatus.NOT_FOUND);
       }
-      throw new HttpException('Failed to fetch GitHub data', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('Failed to fetch GitHub data. Please try again later.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

@@ -4,6 +4,7 @@ export interface CardConfig {
   hide_border: boolean;
   show_icons: boolean;
   hide_rank: boolean;
+  hide_title: boolean;
   include_all_commits: boolean;
   count_private: boolean;
   hide: string[]; // ['stars', 'commits', 'prs', 'issues', 'contribs']

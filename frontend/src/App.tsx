@@ -16,6 +16,7 @@ function App() {
     hide_border: true,
     show_icons: true,
     hide_rank: false,
+    hide_title: false,
     include_all_commits: true,
     count_private: true,
     hide: [],

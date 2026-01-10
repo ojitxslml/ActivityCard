@@ -4,6 +4,7 @@ export class CardConfigDto {
   hide_border?: boolean = false;
   show_icons?: boolean = true;
   hide_rank?: boolean = false;
+  hide_title?: boolean = false;
   include_all_commits?: boolean = true;
   count_private?: boolean = false;
   hide?: string = '';

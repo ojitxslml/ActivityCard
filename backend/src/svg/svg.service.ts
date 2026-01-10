@@ -9,10 +9,22 @@ export class SvgService {
     const theme = this.getTheme(config);
     const hiddenStats = config.hide ? config.hide.split(',') : [];
     
-    const width = 495;
-    const height = config.hide_rank ? 165 : 195;
+    // Convert string booleans to actual booleans (query params arrive as strings)
+    const hideRank = this.toBoolean(config.hide_rank);
+    const hideTitle = this.toBoolean(config.hide_title);
+    const hideBorder = this.toBoolean(config.hide_border);
+    const showIcons = this.toBoolean(config.show_icons, true);
+    const includeAllCommits = this.toBoolean(config.include_all_commits, true);
     
-    const statsHtml = this.generateStatsHtml(stats, config, hiddenStats, theme);
+    const width = 495;
+    // Adjust height based on visibility options
+    let height = 195;
+    if (hideRank && hideTitle) height = 135;
+    else if (hideRank || hideTitle) height = 165;
+    
+    const statsHtml = this.generateStatsHtml(stats, config, hiddenStats, theme, showIcons, includeAllCommits);
+    const titleOffset = hideTitle ? 0 : 30;
+    const statsOffset = hideTitle ? 30 : 60;
     
     return `
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,29 +48,36 @@ export class SvgService {
     stroke="#${theme.border_color}" 
     width="${width - 1}" 
     fill="#${theme.bg_color}" 
-    stroke-opacity="${config.hide_border ? '0' : '1'}"
+    stroke-opacity="${hideBorder ? '0' : '1'}"
   />
   
-  <g transform="translate(25, 30)">
+  ${!hideTitle ? `<g transform="translate(25, 30)">
     <text x="0" y="0" class="header">${config.custom_title || `${stats.name}'s GitHub Stats`}</text>
-  </g>
+  </g>` : ''}
   
-  <g transform="translate(0, 60)">
+  <g transform="translate(0, ${statsOffset})">
     ${statsHtml}
   </g>
   
-  ${!config.hide_rank ? this.generateRankCircle(stats.rank, theme, width) : ''}
+  ${!hideRank ? this.generateRankCircle(stats.rank, theme, width) : ''}
 </svg>`.trim();
   }
 
-  private generateStatsHtml(stats: UserStats, config: CardConfigDto, hiddenStats: string[], theme: any): string {
+  private toBoolean(value: any, defaultValue = false): boolean {
+    if (value === undefined || value === null) return defaultValue;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return !!value;
+  }
+
+  private generateStatsHtml(stats: UserStats, config: CardConfigDto, hiddenStats: string[], theme: any, showIcons: boolean, includeAllCommits: boolean): string {
     const statsToShow: Array<{ label: string; value: string | number; icon: string }> = [];
     
     if (!hiddenStats.includes('stars')) {
       statsToShow.push({ label: 'Total Stars', value: stats.totalStars, icon: this.getStarIcon(theme.icon_color) });
     }
     if (!hiddenStats.includes('commits')) {
-      statsToShow.push({ label: 'Total Commits', value: config.include_all_commits ? stats.totalCommits : `${stats.totalCommits} (2024)`, icon: this.getCommitIcon(theme.icon_color) });
+      statsToShow.push({ label: 'Total Commits', value: includeAllCommits ? stats.totalCommits : `${stats.totalCommits} (2024)`, icon: this.getCommitIcon(theme.icon_color) });
     }
     if (!hiddenStats.includes('prs')) {
       statsToShow.push({ label: 'Total PRs', value: stats.totalPRs, icon: this.getPRIcon(theme.icon_color) });
@@ -85,9 +104,9 @@ export class SvgService {
         
         html += `
     <g transform="translate(${x}, ${y})" class="stagger" style="animation-delay: ${index * 150}ms">
-      ${config.show_icons ? `<g transform="translate(0, -8)">${stat.icon}</g>` : ''}
-      <text class="stat-label" x="${config.show_icons ? '22' : '0'}" y="0">${stat.label}:</text>
-      <text class="stat-value" x="${config.show_icons ? '22' : '0'}" y="14">${stat.value}</text>
+      ${showIcons ? `<g transform="translate(0, -8)">${stat.icon}</g>` : ''}
+      <text class="stat-label" x="${showIcons ? '22' : '0'}" y="0">${stat.label}:</text>
+      <text class="stat-value" x="${showIcons ? '22' : '0'}" y="14">${stat.value}</text>
     </g>`;
       }
     }
