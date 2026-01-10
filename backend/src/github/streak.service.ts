@@ -12,15 +12,17 @@ export class StreakService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async getStreakStats(username: string): Promise<StreakStats> {
+  async getStreakStats(username: string, refresh = false): Promise<StreakStats> {
     const cacheKey = `streak_stats_${username}`;
-    const cached = await this.cacheManager.get<StreakStats>(cacheKey);
     
-    if (cached) {
-      return cached;
+    if (!refresh) {
+      const cached = await this.cacheManager.get<StreakStats>(cacheKey);
+      if (cached) {
+        return cached;
+      }
     }
 
-    const contributions = await this.getContributions(username);
+    const contributions = await this.getContributions(username, refresh);
     const stats = this.calculateStreaks(username, contributions);
     
     // Cache for 5 minutes (300 seconds)
@@ -29,12 +31,14 @@ export class StreakService {
     return stats;
   }
 
-  async getContributions(username: string): Promise<ContributionDay[]> {
+  async getContributions(username: string, refresh = false): Promise<ContributionDay[]> {
     const cacheKey = `contributions_${username}`;
-    const cached = await this.cacheManager.get<ContributionDay[]>(cacheKey);
     
-    if (cached) {
-      return cached;
+    if (!refresh) {
+      const cached = await this.cacheManager.get<ContributionDay[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
     }
 
     const contributions = await this.fetchContributions(username);

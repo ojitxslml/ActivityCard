@@ -20,7 +20,7 @@ export class StreakSvgService {
     const theme = this.getTheme(config);
     const width = 495;
     const baseHeight = config.hide_title ? 165 : 195;
-    const height = baseHeight + 120;
+    const height = baseHeight + 100;
     const titleOffset = config.hide_title ? 0 : 30;
 
     // Use real contributions if provided, otherwise generate mock data
@@ -30,6 +30,11 @@ export class StreakSvgService {
 
     return `
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
   <style>
     .header { font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: #${theme.stroke_color}; }
     .stat-value { font: 700 20px 'Segoe UI', Ubuntu, Sans-Serif; fill: #${theme.curr_streak_color}; }
@@ -63,10 +68,10 @@ export class StreakSvgService {
   ` : ''}
   
   <!-- Stats Container -->
-  <g transform="translate(${width / 2}, ${50 + titleOffset})">
+  <g transform="translate(${width / 2}, ${65 + titleOffset})">
     <!-- Total Contributions -->
     <g transform="translate(-155, 0)" class="stagger">
-      <circle cx="0" cy="0" r="40" fill="#${theme.ring_color}" opacity="0.2"/>
+      <circle cx="0" cy="0" r="40" fill="#${theme.ring_color}" opacity="0.2" filter="url(#shadow)"/>
       <text x="0" y="5" text-anchor="middle" dominant-baseline="middle" class="stat-value">
         ${this.formatNumber(stats.totalContributions)}
       </text>
@@ -76,18 +81,18 @@ export class StreakSvgService {
     
     <!-- Current Streak -->
     <g transform="translate(0, 0)" class="stagger" style="animation-delay: 150ms">
-      <circle cx="0" cy="0" r="40" fill="#${theme.fire_color}" opacity="0.2"/>
-      ${this.getFireIcon(0, -12, theme.fire_color)}
-      <text x="0" y="10" text-anchor="middle" dominant-baseline="middle" class="stat-value">
+      <circle cx="0" cy="0" r="55" fill="#${theme.fire_color}" opacity="0.2" filter="url(#shadow)"/>
+      ${this.getFireBackground(theme.fire_color)}
+      <text x="0" y="15" text-anchor="middle" dominant-baseline="middle" class="stat-value">
         ${stats.currentStreak}
       </text>
-      <text x="0" y="50" text-anchor="middle" class="stat-label">Current Streak</text>
-      <text x="0" y="63" text-anchor="middle" class="date-text">${this.formatDateRange(stats.currentStreakStart, stats.currentStreakEnd)}</text>
+      <text x="0" y="70" text-anchor="middle" class="stat-label">Current Streak</text>
+      <text x="0" y="83" text-anchor="middle" class="date-text">${this.formatDateRange(stats.currentStreakStart, stats.currentStreakEnd)}</text>
     </g>
     
     <!-- Longest Streak -->
     <g transform="translate(155, 0)" class="stagger" style="animation-delay: 300ms">
-      <circle cx="0" cy="0" r="40" fill="#${theme.longest_streak_color}" opacity="0.2"/>
+      <circle cx="0" cy="0" r="40" fill="#${theme.longest_streak_color}" opacity="0.2" filter="url(#shadow)"/>
       <text x="0" y="5" text-anchor="middle" dominant-baseline="middle" class="stat-value" fill="#${theme.longest_streak_color}">
         ${stats.longestStreak}
       </text>
@@ -96,8 +101,37 @@ export class StreakSvgService {
     </g>
   </g>
   
-  ${this.generateContributionGraph(contribData, theme, 155 + titleOffset, width)}
+  ${this.generateContributionGraph(contribData, theme, 175 + titleOffset, width)}
 </svg>`.trim();
+  }
+
+  private getFireIcon(x: number, y: number, color: string): string {
+    return `
+    <path
+      transform="translate(${x - 12}, ${y - 12}) scale(1)"
+      d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+      fill="#${color}"
+      stroke="#${color}"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />`;
+  }
+
+  private getFireBackground(color: string): string {
+    return `
+    <g transform="scale(4.2) translate(-12, -10.2)">
+      <path 
+        d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" 
+        fill="#${color}" 
+        fill-opacity="0.2"
+        stroke="#${color}"
+        stroke-width="0.4" 
+        stroke-opacity="0.9"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    </g>`;
   }
 
   private generateMockContributions(): any[] {
@@ -226,13 +260,5 @@ export class StreakSvgService {
     return `${startStr} - ${endStr}`;
   }
 
-  private getFireIcon(x: number, y: number, color: string): string {
-    return `
-    <g transform="translate(${x}, ${y})">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="#${color}" x="-10" y="0">
-        <path d="M10 2C10 2 6 6 6 10C6 12.2091 7.79086 14 10 14C12.2091 14 14 12.2091 14 10C14 6 10 2 10 2Z"/>
-        <path d="M10 14C10 14 8 15 8 16.5C8 17.3284 8.67157 18 9.5 18H10.5C11.3284 18 12 17.3284 12 16.5C12 15 10 14 10 14Z" opacity="0.7"/>
-      </svg>
-    </g>`;
-  }
+
 }

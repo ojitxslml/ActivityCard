@@ -8,9 +8,10 @@ import { buildStreakUrl, generateStreakMarkdown } from '../utils/streakUrlBuilde
 interface PreviewPanelProps {
   config: CardConfig | StreakConfig;
   isStreak?: boolean;
+  refreshKey?: number;
 }
 
-export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = false }) => {
+export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = false, refreshKey = 0 }) => {
   const [copiedMd, setCopiedMd] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -20,9 +21,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
     ? buildStreakUrl(config as StreakConfig)
     : buildStatsUrl(config as CardConfig);
     
+  // Add refresh param for preview only
+  const displayUrl = refreshKey > 0 
+    ? `${url}&refresh=true&_t=${Date.now()}` // Add simple timestamp to force browser reload
+    : url;
+
   React.useEffect(() => {
      setImgError(false);
-  }, [url]);
+  }, [displayUrl]);
 
   const markdown = isStreak
     ? generateStreakMarkdown(config as StreakConfig)
@@ -44,7 +50,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
         {config.username ? (
           !imgError ? (
             <img 
-              src={url} 
+              src={displayUrl} 
               alt={isStreak ? "GitHub Streak" : "GitHub Stats"}
               onError={() => setImgError(true)}
               style={{ maxWidth: '100%', height: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderRadius: '4px' }}

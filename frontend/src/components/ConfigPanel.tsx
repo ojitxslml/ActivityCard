@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { Palette, Layout, EyeOff, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
+import { Palette, Layout, EyeOff, FileCode, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { AVAILABLE_THEMES, type CardConfig } from '../types';
 import type { StreakConfig } from '../types/streak';
 
@@ -8,8 +8,10 @@ interface ConfigPanelProps {
   config: CardConfig | StreakConfig;
   onChange: (newConfig: CardConfig | StreakConfig) => void;
   isStreak?: boolean;
+  onRefresh?: () => void;
 }
 
+// ... existing ColorInput ...
 const ColorInput = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -67,7 +69,7 @@ const Section = ({ title, icon: Icon, children, defaultOpen = true }: any) => {
   );
 }
 
-export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false }) => {
+export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false, onRefresh }) => {
   
   const update = (key: string, value: any) => {
     onChange({ ...config, [key]: value });
@@ -94,12 +96,25 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isSt
         <Section title="Core Settings" icon={Layout}>
           <div className="control-group">
             <label className="label">GitHub Username</label>
-            <input 
-              type="text" 
-              value={config.username} 
-              onChange={(e) => update('username', e.target.value)} 
-              placeholder="your-username"
-            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input 
+                type="text" 
+                value={config.username} 
+                onChange={(e) => update('username', e.target.value)} 
+                placeholder="your-username"
+                style={{ flex: 1 }}
+              />
+              {onRefresh && (
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={onRefresh}
+                  title="Refresh data from GitHub"
+                  style={{ padding: '0 0.75rem' }}
+                >
+                  <RefreshCw size={16} />
+                </button>
+              )}
+            </div>
           </div>
           {!isStreak && (
             <div className="control-group">

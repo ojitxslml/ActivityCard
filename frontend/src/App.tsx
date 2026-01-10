@@ -68,6 +68,13 @@ function App() {
     setActiveTab(newTab);
   };
 
+  // Refresh state to force update image
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="layout">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
@@ -101,13 +108,15 @@ function App() {
           {activeTab === 'stats' ? (
             <ConfigPanel 
               config={statsConfig} 
-              onChange={(newConfig) => setStatsConfig(newConfig as CardConfig)} 
+              onChange={(newConfig) => setStatsConfig(newConfig as CardConfig)}
+              onRefresh={handleRefresh}
             />
           ) : (
             <ConfigPanel 
               config={streakConfig} 
               onChange={(newConfig) => setStreakConfig(newConfig as StreakConfig)} 
               isStreak 
+              onRefresh={handleRefresh}
             />
           )}
         </div>
@@ -116,6 +125,7 @@ function App() {
       <PreviewPanel 
         config={activeTab === 'stats' ? statsConfig : streakConfig} 
         isStreak={activeTab === 'streak'}
+        refreshKey={refreshKey}
       />
     </div>
   );

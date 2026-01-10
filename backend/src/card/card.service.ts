@@ -10,8 +10,8 @@ export class CardService {
     private readonly svgService: SvgService,
   ) {}
 
-  async generateCard(config: CardConfigDto): Promise<string> {
-    const stats = await this.githubService.getUserStats(config.username);
+  async generateCard(config: CardConfigDto, refresh = false): Promise<string> {
+    const stats = await this.githubService.getUserStats(config.username, refresh);
     return this.svgService.generateCard(stats, config);
   }
 

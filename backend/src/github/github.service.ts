@@ -14,12 +14,14 @@ export class GithubService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async getUserStats(username: string): Promise<UserStats> {
+  async getUserStats(username: string, refresh = false): Promise<UserStats> {
     const cacheKey = `user_stats_${username}`;
-    const cached = await this.cacheManager.get<UserStats>(cacheKey);
     
-    if (cached) {
-      return cached;
+    if (!refresh) {
+      const cached = await this.cacheManager.get<UserStats>(cacheKey);
+      if (cached) {
+        return cached;
+      }
     }
 
     try {

@@ -8,9 +8,13 @@ export class CardController {
   constructor(private readonly cardService: CardService) {}
 
   @Get('card')
-  async getCard(@Query() config: CardConfigDto, @Res() res: Response) {
+  async getCard(
+    @Query() config: CardConfigDto,
+    @Query('refresh') refresh: string,
+    @Res() res: Response,
+  ) {
     try {
-      const svg = await this.cardService.generateCard(config);
+      const svg = await this.cardService.generateCard(config, refresh === 'true');
       
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Cache-Control', 'public, max-age=300');

@@ -13,6 +13,7 @@ export class StreakController {
   @Get('streak')
   async getStreak(
     @Query('username') username: string,
+    @Query('refresh') refresh: string,
     @Query() config: any,
     @Res() res: Response,
   ) {
@@ -21,8 +22,9 @@ export class StreakController {
         throw new Error('Username is required');
       }
 
-      const stats = await this.streakService.getStreakStats(username);
-      const contributions = await this.streakService.getContributions(username);
+      const shouldRefresh = refresh === 'true';
+      const stats = await this.streakService.getStreakStats(username, shouldRefresh);
+      const contributions = await this.streakService.getContributions(username, shouldRefresh);
       const svg = this.streakSvgService.generateStreakCard(stats, config, contributions);
 
       res.setHeader('Content-Type', 'image/svg+xml');
