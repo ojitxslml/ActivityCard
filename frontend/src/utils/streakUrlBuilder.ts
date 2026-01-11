@@ -1,7 +1,7 @@
 import type { StreakConfig } from '../types/streak';
 
 export function buildStreakUrl(config: StreakConfig): string {
-  const baseUrl = "http://localhost:3000/api/streak";
+  const baseUrl = `${import.meta.env.VITE_API_URL}/streak`;
   const params = new URLSearchParams();
 
   if (config.username) params.append("username", config.username);

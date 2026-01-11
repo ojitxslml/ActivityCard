@@ -1,7 +1,7 @@
 import type { CardConfig } from '../types';
 
 export function buildStatsUrl(config: CardConfig): string {
-  const baseUrl = "http://localhost:3000/api/card";
+  const baseUrl = `${import.meta.env.VITE_API_URL}/card`;
   const params = new URLSearchParams();
 
   if (config.username) params.append("username", config.username);
