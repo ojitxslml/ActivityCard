@@ -116,6 +116,16 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isSt
               )}
             </div>
           </div>
+          <div className="control-group">
+            <label className="label">Card Width</label>
+            <select 
+              value={config.width || 'normal'} 
+              onChange={(e) => update('width', e.target.value as 'normal' | 'wide')}
+            >
+              <option value="normal">Normal (495px)</option>
+              <option value="wide">Wide (854px)</option>
+            </select>
+          </div>
           {!isStreak && (
             <div className="control-group">
               <label className="label">Card Title (Optional)</label>

@@ -15,6 +15,7 @@ export interface CardConfig {
   text_color?: string;
   icon_color?: string;
   border_color?: string;
+  width?: 'normal' | 'wide';
 }
 
 export const AVAILABLE_THEMES = [

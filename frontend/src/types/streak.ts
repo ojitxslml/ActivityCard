@@ -9,4 +9,5 @@ export interface StreakConfig {
   fire_color?: string;
   curr_streak_color?: string;
   longest_streak_color?: string;
+  width?: 'normal' | 'wide';
 }

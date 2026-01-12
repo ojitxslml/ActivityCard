@@ -1,44 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ConfigPanel } from './components/ConfigPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import type { CardConfig } from './types';
 import type { StreakConfig } from './types/streak';
 import { Github } from 'lucide-react';
+import { saveStatsConfig, loadStatsConfig, saveStreakConfig, loadStreakConfig } from './utils/localStorage';
 
 type TabType = 'stats' | 'streak';
+
+const defaultStatsConfig: CardConfig = {
+  username: '',
+  theme: 'default',
+  hide_border: true,
+  show_icons: true,
+  hide_rank: false,
+  hide_title: false,
+  include_all_commits: true,
+  count_private: true,
+  hide: [],
+  bg_color: '#1a1b27',
+  title_color: '#0bc1d9',
+  text_color: '#a9b1d6',
+  icon_color: '#89ddff',
+  border_color: '#0bc1d9',
+};
+
+const defaultStreakConfig: StreakConfig = {
+  username: '',
+  theme: 'default',
+  hide_border: true,
+  hide_title: false,
+  bg_color: '#1a1b27',
+  stroke_color: '#0bc1d9',
+  ring_color: '#89ddff',
+  fire_color: 'fb8c00',
+  curr_streak_color: '#0bc1d9',
+  longest_streak_color: '#89ddff',
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   
-  const [statsConfig, setStatsConfig] = useState<CardConfig>({
-    username: '',
-    theme: 'default',
-    hide_border: true,
-    show_icons: true,
-    hide_rank: false,
-    hide_title: false,
-    include_all_commits: true,
-    count_private: true,
-    hide: [],
-    bg_color: '#1a1b27',
-    title_color: '#0bc1d9',
-    text_color: '#a9b1d6',
-    icon_color: '#89ddff',
-    border_color: '#0bc1d9',
+  // Load configs from localStorage or use defaults
+  const [statsConfig, setStatsConfig] = useState<CardConfig>(() => {
+    const saved = loadStatsConfig();
+    return saved || defaultStatsConfig;
   });
 
-  const [streakConfig, setStreakConfig] = useState<StreakConfig>({
-    username: '',
-    theme: 'default',
-    hide_border: true,
-    hide_title: false,
-    bg_color: '#1a1b27',
-    stroke_color: '#0bc1d9',
-    ring_color: '#89ddff',
-    fire_color: 'fb8c00',
-    curr_streak_color: '#0bc1d9',
-    longest_streak_color: '#89ddff',
+  const [streakConfig, setStreakConfig] = useState<StreakConfig>(() => {
+    const saved = loadStreakConfig();
+    return saved || defaultStreakConfig;
   });
+
+  // Save to localStorage whenever configs change
+  useEffect(() => {
+    saveStatsConfig(statsConfig);
+  }, [statsConfig]);
+
+  useEffect(() => {
+    saveStreakConfig(streakConfig);
+  }, [streakConfig]);
 
   // Sync username and theme between configs when switching tabs
   const handleTabChange = (newTab: TabType) => {
@@ -59,7 +80,7 @@ function App() {
         updates.username = streakConfig.username;
       }
       if (streakConfig.theme !== statsConfig.theme) {
-        updates.theme = streakConfig.theme;
+        updates.theme = statsConfig.theme;
       }
       if (Object.keys(updates).length > 0) {
         setStatsConfig({ ...statsConfig, ...updates });

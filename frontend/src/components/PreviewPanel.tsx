@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, ExternalLink, Download } from 'lucide-react';
+import { Copy, Check, ExternalLink, Download, Loader2 } from 'lucide-react';
 import type { CardConfig } from '../types';
 import type { StreakConfig } from '../types/streak';
 import { buildStatsUrl, generateMarkdown } from '../utils/urlBuilder';
@@ -15,6 +15,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
   const [copiedMd, setCopiedMd] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Reset error when url changes
   const url = isStreak 
@@ -28,7 +29,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
 
   React.useEffect(() => {
      setImgError(false);
-  }, [displayUrl]);
+     setIsLoading(true);
+  }, [url, refreshKey]); // Fixed: depend on url and refreshKey instead of displayUrl
 
   const markdown = isStreak
     ? generateStreakMarkdown(config as StreakConfig)
@@ -44,17 +46,51 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
     }
   };
 
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleImageError = () => {
+    setIsLoading(false);
+    setImgError(true);
+  };
+
   return (
     <div className="panel" style={{ height: '100%', justifyContent: 'center' }}>
       <div className="preview-area">
         {config.username ? (
           !imgError ? (
-            <img 
-              src={displayUrl} 
-              alt={isStreak ? "GitHub Streak" : "GitHub Stats"}
-              onError={() => setImgError(true)}
-              style={{ maxWidth: '100%', height: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderRadius: '4px' }}
-            />
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {isLoading && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '50%', 
+                  left: '50%', 
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 10
+                }}>
+                  <Loader2 
+                    size={48} 
+                    color="var(--accent)" 
+                    style={{ animation: 'spin 1s linear infinite' }}
+                  />
+                </div>
+              )}
+              <img 
+                src={displayUrl} 
+                alt={isStreak ? "GitHub Streak" : "GitHub Stats"}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                style={{ 
+                  maxWidth: '100%', 
+                  height: 'auto', 
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)', 
+                  borderRadius: '4px',
+                  opacity: isLoading ? 0.3 : 1,
+                  transition: 'opacity 0.3s ease'
+                }}
+              />
+            </div>
           ) : (
             <div style={{ textAlign: 'center', color: '#ef4444' }}>
               <p style={{ fontWeight: 600 }}>Failed to load {isStreak ? 'streak' : 'stats'} card</p>

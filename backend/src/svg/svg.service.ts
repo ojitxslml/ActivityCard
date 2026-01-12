@@ -16,13 +16,14 @@ export class SvgService {
     const showIcons = this.toBoolean(config.show_icons, true);
     const includeAllCommits = this.toBoolean(config.include_all_commits, true);
     
-    const width = 495;
+    // Support both normal (495px) and wide (854px) widths
+    const width = config.width === 'wide' ? 854 : 495;
     // Adjust height based on visibility options
     let height = 195;
     if (hideRank && hideTitle) height = 135;
     else if (hideRank || hideTitle) height = 165;
     
-    const statsHtml = this.generateStatsHtml(stats, config, hiddenStats, theme, showIcons, includeAllCommits);
+    const statsHtml = this.generateStatsHtml(stats, config, hiddenStats, theme, showIcons, includeAllCommits, width);
     const titleOffset = hideTitle ? 0 : 30;
     const statsOffset = hideTitle ? 30 : 60;
     
@@ -70,7 +71,7 @@ export class SvgService {
     return !!value;
   }
 
-  private generateStatsHtml(stats: UserStats, config: CardConfigDto, hiddenStats: string[], theme: any, showIcons: boolean, includeAllCommits: boolean): string {
+  private generateStatsHtml(stats: UserStats, config: CardConfigDto, hiddenStats: string[], theme: any, showIcons: boolean, includeAllCommits: boolean, width: number): string {
     const statsToShow: Array<{ label: string; value: string | number; icon: string }> = [];
     
     if (!hiddenStats.includes('stars')) {
@@ -89,8 +90,15 @@ export class SvgService {
       statsToShow.push({ label: 'Contributed to', value: stats.contributedTo, icon: this.getRepoIcon(theme.icon_color) });
     }
 
-    const itemsPerRow = 2;
+    // Use 3 columns for wide cards, 2 for normal
+    const isWide = width > 600;
+    const itemsPerRow = isWide ? 3 : 2;
     const rows = Math.ceil(statsToShow.length / itemsPerRow);
+    
+    // Calculate column spacing based on width
+    const columnSpacing = isWide ? 250 : 230;
+    const startX = 30;
+    
     let html = '';
     
     for (let row = 0; row < rows; row++) {
@@ -99,7 +107,7 @@ export class SvgService {
         if (index >= statsToShow.length) break;
         
         const stat = statsToShow[index];
-        const x = col === 0 ? 30 : 260;
+        const x = startX + col * columnSpacing;
         const y = 15 + row * 35;
         
         html += `
@@ -141,13 +149,13 @@ export class SvgService {
     };
   }
 
-  generateErrorCard(message: string): string {
+  generateErrorCard(message: string, width: number = 495): string {
     return `
-<svg width="495" height="120" viewBox="0 0 495 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="${width}" height="120" viewBox="0 0 ${width} 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     .error { font: 600 14px 'Segoe UI', Ubuntu, Sans-Serif; fill: #e74c3c; }
   </style>
-  <rect x="0.5" y="0.5" rx="4.5" height="99%" stroke="#e4e2e2" width="494" fill="#ffffff" />
+  <rect x="0.5" y="0.5" rx="4.5" height="99%" stroke="#e4e2e2" width="${width - 1}" fill="#ffffff" />
   <g transform="translate(25, 35)">
     <text x="0" y="0" class="error">Error: ${message}</text>
   </g>

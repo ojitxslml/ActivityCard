@@ -30,6 +30,11 @@ export function buildStatsUrl(config: CardConfig): string {
     if (config.border_color) params.append("border_color", config.border_color.replace('#', ''));
   }
 
+  // Width option
+  if (config.width && config.width !== 'normal') {
+    params.append("width", config.width);
+  }
+
   return `${baseUrl}?${params.toString()}`;
 }
 

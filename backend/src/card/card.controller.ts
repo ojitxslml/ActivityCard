@@ -20,7 +20,8 @@ export class CardController {
       res.setHeader('Cache-Control', 'public, max-age=300');
       res.status(HttpStatus.OK).send(svg);
     } catch (error) {
-      const errorSvg = this.cardService.generateErrorCard(error.message);
+      const width = config.width === 'wide' ? 854 : 495;
+      const errorSvg = this.cardService.generateErrorCard(error.message, width);
       res.setHeader('Content-Type', 'image/svg+xml');
       res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).send(errorSvg);
     }

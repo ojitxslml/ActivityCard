@@ -181,6 +181,10 @@ input[type="text"]:focus, select:focus {
   accent-color: var(--accent);
 }
 
+.checkbox-wrapper input[type="checkbox"]:checked + span {
+  color: var(--text-primary);
+}
+
 .copy-actions {
   display: flex;
   gap: 1rem;
@@ -200,4 +204,14 @@ input[type="text"]:focus, select:focus {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #52525b;
+}
+
+/* Spin animation for loader */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

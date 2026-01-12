@@ -14,4 +14,5 @@ export class CardConfigDto {
   text_color?: string;
   icon_color?: string;
   border_color?: string;
+  width?: 'normal' | 'wide' = 'normal';
 }

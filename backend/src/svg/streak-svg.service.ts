@@ -12,15 +12,19 @@ interface StreakConfig {
   fire_color?: string;
   curr_streak_color?: string;
   longest_streak_color?: string;
+  width?: 'normal' | 'wide';
 }
 
 @Injectable()
 export class StreakSvgService {
   generateStreakCard(stats: StreakStats, config: StreakConfig, contributions?: any[]): string {
     const theme = this.getTheme(config);
-    const width = 495;
+    // Support both normal (495px) and wide (854px) widths
+    const width = config.width === 'wide' ? 854 : 495;
     const baseHeight = config.hide_title ? 165 : 195;
-    const height = baseHeight + 100;
+    // Add more height for wide cards to accommodate larger contribution graph
+    const extraHeight = width > 600 ? 120 : 100;
+    const height = baseHeight + extraHeight;
     const titleOffset = config.hide_title ? 0 : 30;
 
     // Use real contributions if provided, otherwise generate mock data
@@ -70,7 +74,7 @@ export class StreakSvgService {
   <!-- Stats Container -->
   <g transform="translate(${width / 2}, ${65 + titleOffset})">
     <!-- Total Contributions -->
-    <g transform="translate(-155, 0)" class="stagger">
+    <g transform="translate(${width > 600 ? -220 : -155}, 0)" class="stagger">
       <circle cx="0" cy="0" r="40" fill="#${theme.ring_color}" opacity="0.2" filter="url(#shadow)"/>
       <text x="0" y="5" text-anchor="middle" dominant-baseline="middle" class="stat-value">
         ${this.formatNumber(stats.totalContributions)}
@@ -91,7 +95,7 @@ export class StreakSvgService {
     </g>
     
     <!-- Longest Streak -->
-    <g transform="translate(155, 0)" class="stagger" style="animation-delay: 300ms">
+    <g transform="translate(${width > 600 ? 220 : 155}, 0)" class="stagger" style="animation-delay: 300ms">
       <circle cx="0" cy="0" r="40" fill="#${theme.longest_streak_color}" opacity="0.2" filter="url(#shadow)"/>
       <text x="0" y="5" text-anchor="middle" dominant-baseline="middle" class="stat-value" fill="#${theme.longest_streak_color}">
         ${stats.longestStreak}
@@ -152,22 +156,32 @@ export class StreakSvgService {
 
   private generateContributionGraph(contributions: any[], theme: any, yOffset: number, width: number): string {
     const weeks = this.groupContributionsByWeek(contributions);
-    const cellSize = 6;
-    const cellGap = 2;
-    const graphWidth = weeks.length * (cellSize + cellGap);
+    
+    // Use more weeks for wide cards to fill the space better
+    const isWide = width > 600;
+    const maxWeeks = isWide ? 65 : 53; // Show more weeks in wide format
+    
+    // Larger cells only for wide cards
+    const cellSize = isWide ? 8 : 6;
+    const cellGap = isWide ? 3 : 2;
+    const borderRadius = isWide ? 1.5 : 1;
+    
+    const weeksToShow = weeks.slice(-maxWeeks);
+    
+    const graphWidth = weeksToShow.length * (cellSize + cellGap);
     const startX = (width - graphWidth) / 2; // Center the graph
     
     let svg = `<g transform="translate(0, ${yOffset})">`;
     svg += `<text x="${width / 2}" y="0" text-anchor="middle" class="section-title">Contribution Activity</text>`;
     
-    weeks.forEach((week, weekIndex) => {
+    weeksToShow.forEach((week, weekIndex) => {
       week.forEach((day, dayIndex) => {
         const x = startX + weekIndex * (cellSize + cellGap);
         const y = 20 + dayIndex * (cellSize + cellGap);
         const level = this.getContributionLevel(day.count);
         const color = this.getContributionColor(level, theme);
         
-        svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="#${color}" rx="1"/>`;
+        svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="#${color}" rx="${borderRadius}"/>`;
       });
     });
     

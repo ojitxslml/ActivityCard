@@ -19,6 +19,11 @@ export function buildStreakUrl(config: StreakConfig): string {
     if (config.longest_streak_color) params.append("longest_streak_color", config.longest_streak_color.replace('#', ''));
   }
 
+  // Width option
+  if (config.width && config.width !== 'normal') {
+    params.append("width", config.width);
+  }
+
   return `${baseUrl}?${params.toString()}`;
 }
 
