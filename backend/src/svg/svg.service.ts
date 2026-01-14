@@ -60,7 +60,7 @@ export class SvgService {
     ${statsHtml}
   </g>
   
-  ${!hideRank ? this.generateRankCircle(stats.rank, theme, width) : ''}
+  ${!hideRank ? this.generateRankCircle(stats.rank, theme, width, height) : ''}
 </svg>`.trim();
   }
 
@@ -122,11 +122,12 @@ export class SvgService {
     return html;
   }
 
-  private generateRankCircle(rank: string, theme: any, cardWidth: number): string {
+  private generateRankCircle(rank: string, theme: any, cardWidth: number, cardHeight: number): string {
+    const centerY = cardHeight / 2;
     return `
-  <g transform="translate(${cardWidth - 65}, 50)">
+  <g transform="translate(${cardWidth - 65}, ${centerY})">
     <circle cx="0" cy="0" r="40" stroke="#${theme.border_color}" stroke-width="1" fill="#${theme.bg_color}" opacity="0.8"/>
-    <text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="26" font-weight="700" fill="#${theme.title_color}">
+    <text x="0" y="-2" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="26" font-weight="700" fill="#${theme.title_color}">
       ${rank}
     </text>
     <text x="0" y="24" text-anchor="middle" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="11" font-weight="600" fill="#${theme.text_color}">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Palette, Layout, EyeOff, FileCode, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
-import { AVAILABLE_THEMES, type CardConfig } from '../types';
+import type { CardConfig } from '../types';
 import type { StreakConfig } from '../types/streak';
 
 interface ConfigPanelProps {
@@ -144,7 +144,53 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isSt
             <label className="label">Theme</label>
             <select value={getTheme()} onChange={(e) => update('theme', e.target.value)}>
                <option value="custom">Custom Colors</option>
-               {AVAILABLE_THEMES.map(t => <option key={t} value={t}>{t}</option>)}
+               <optgroup label="Light Themes">
+                 <option value="default">default</option>
+                 <option value="vue">vue</option>
+                 <option value="buefy">buefy</option>
+                 <option value="solarized-light">solarized-light</option>
+                 <option value="graywhite">graywhite</option>
+                 <option value="flag-india">flag-india</option>
+                 <option value="jolly">jolly</option>
+                 <option value="maroongold">maroongold</option>
+               </optgroup>
+               <optgroup label="Dark Themes">
+                 <option value="dark">dark</option>
+                 <option value="radical">radical</option>
+                 <option value="merko">merko</option>
+                 <option value="gruvbox">gruvbox</option>
+                 <option value="tokyonight">tokyonight</option>
+                 <option value="onedark">onedark</option>
+                 <option value="cobalt">cobalt</option>
+                 <option value="synthwave">synthwave</option>
+                 <option value="highcontrast">highcontrast</option>
+                 <option value="dracula">dracula</option>
+                 <option value="prussian">prussian</option>
+                 <option value="monokai">monokai</option>
+                 <option value="vue-dark">vue-dark</option>
+                 <option value="shades-of-purple">shades-of-purple</option>
+                 <option value="nightowl">nightowl</option>
+                 <option value="blue-green">blue-green</option>
+                 <option value="algolia">algolia</option>
+                 <option value="great-gatsby">great-gatsby</option>
+                 <option value="darcula">darcula</option>
+                 <option value="bear">bear</option>
+                 <option value="solarized-dark">solarized-dark</option>
+                 <option value="chartreuse-dark">chartreuse-dark</option>
+                 <option value="nord">nord</option>
+                 <option value="gotham">gotham</option>
+                 <option value="material-palenight">material-palenight</option>
+                 <option value="vision-friendly-dark">vision-friendly-dark</option>
+                 <option value="ayu-mirage">ayu-mirage</option>
+                 <option value="midnight-purple">midnight-purple</option>
+                 <option value="calm">calm</option>
+                 <option value="omni">omni</option>
+                 <option value="react">react</option>
+                 <option value="yeblu">yeblu</option>
+                 <option value="blueberry">blueberry</option>
+                 <option value="slateorange">slateorange</option>
+                 <option value="kacho_ga">kacho_ga</option>
+               </optgroup>
             </select>
           </div>
 
