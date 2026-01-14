@@ -118,22 +118,38 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
 
       {config.username && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '0.5rem'
+          }}>
             <button className="btn" onClick={() => copyToClipboard(markdown, setCopiedMd)}>
               {copiedMd ? <Check size={18} /> : <Copy size={18} />}
-              {copiedMd ? 'Copied Markdown' : 'Copy Markdown'}
+              {copiedMd ? 'Copied!' : 'Copy MD'}
             </button>
             <button className="btn btn-secondary" onClick={() => copyToClipboard(url, setCopiedUrl)}>
               {copiedUrl ? <Check size={18} /> : <ExternalLink size={18} />}
-              {copiedUrl ? 'Copied URL' : 'Copy URL'}
+              {copiedUrl ? 'Copied!' : 'Copy URL'}
             </button>
             <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
               <Download size={18} /> Open SVG
             </a>
           </div>
           
-          <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}>
-            <code style={{ fontFamily: 'monospace', color: 'var(--accent)', fontSize: '0.85rem' }}>{markdown}</code>
+          <div style={{ 
+            background: 'var(--bg-input)', 
+            padding: '0.75rem', 
+            borderRadius: '8px', 
+            overflowX: 'auto',
+            maxWidth: '100%'
+          }}>
+            <code style={{ 
+              fontFamily: 'monospace', 
+              color: 'var(--accent)', 
+              fontSize: '0.8rem',
+              wordBreak: 'break-all',
+              display: 'block'
+            }}>{markdown}</code>
           </div>
         </div>
       )}

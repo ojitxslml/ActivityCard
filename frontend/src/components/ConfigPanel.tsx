@@ -56,17 +56,17 @@ const ColorInput = ({ label, value, onChange }: { label: string, value: string, 
 const Section = ({ title, icon: Icon, children, defaultOpen = true }: any) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1.5rem', marginBottom: '0.5rem' }}>
+    <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '0.5rem' }}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isOpen ? '1rem' : 0, color: 'var(--text-primary)', fontWeight: 600 }}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isOpen ? '0.75rem' : 0, color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.9rem', minHeight: '44px', padding: '0.5rem 0' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Icon size={18} /> {title}
         </div>
         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
-      {isOpen && <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>{children}</div>}
+      {isOpen && <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>{children}</div>}
     </div>
   );
 }

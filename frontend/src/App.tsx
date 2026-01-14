@@ -114,70 +114,83 @@ function App() {
 
   return (
     <div className="layout">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
-        <div className="panel" style={{ flex: '0 0 auto', padding: '1rem' }}>
-          <h1 className="panel-title" style={{ fontSize: '1.5rem' }}>
-            <Github size={28} color="var(--accent)" />
+      {/* Header Panel */}
+      <div className="header-panel">
+        <div className="panel" style={{ flex: '0 0 auto', padding: '0.875rem' }}>
+          <h1 className="panel-title" style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>
+            <Github size={24} color="var(--accent)" />
             Activity Card Gen
           </h1>
-          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
             Customize and generate your GitHub profile readme cards.
           </p>
           
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+            gap: '0.5rem', 
+            marginTop: '0.75rem' 
+          }}>
             <button 
               className={activeTab === 'stats' ? 'btn' : 'btn btn-secondary'}
               onClick={() => handleTabChange('stats')}
+              style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
             >
               Stats Card
             </button>
             <button 
               className={activeTab === 'streak' ? 'btn' : 'btn btn-secondary'}
               onClick={() => handleTabChange('streak')}
+              style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
             >
               Streak Card
             </button>
             <button 
               className={activeTab === 'languages' ? 'btn' : 'btn btn-secondary'}
               onClick={() => handleTabChange('languages')}
+              style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
             >
               Languages Card
             </button>
           </div>
         </div>
-        
-        <div style={{ flex: '1 1 auto', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {activeTab === 'stats' ? (
-            <ConfigPanel 
-              config={statsConfig} 
-              onChange={(newConfig) => setStatsConfig(newConfig as CardConfig)}
-              onRefresh={handleRefresh}
-            />
-          ) : activeTab === 'streak' ? (
-            <ConfigPanel 
-              config={streakConfig} 
-              onChange={(newConfig) => setStreakConfig(newConfig as StreakConfig)} 
-              isStreak 
-              onRefresh={handleRefresh}
-            />
-          ) : (
-            <ConfigPanel 
-              config={languagesConfig} 
-              onChange={(newConfig) => setLanguagesConfig(newConfig as LanguagesConfig)} 
-              isLanguages 
-              onRefresh={handleRefresh}
-            />
-          )}
-        </div>
       </div>
 
-      <PreviewPanel 
-        config={activeTab === 'stats' ? statsConfig : activeTab === 'streak' ? streakConfig : languagesConfig} 
-        isStreak={activeTab === 'streak'}
-        isLanguages={activeTab === 'languages'}
-        refreshKey={refreshKey}
-      />
+      {/* Preview Panel - Shows first on mobile (order: 1) */}
+      <div className="preview-container">
+        <PreviewPanel 
+          config={activeTab === 'stats' ? statsConfig : activeTab === 'streak' ? streakConfig : languagesConfig} 
+          isStreak={activeTab === 'streak'}
+          isLanguages={activeTab === 'languages'}
+          refreshKey={refreshKey}
+        />
+      </div>
+
+      {/* Config Panel - Shows second on mobile (order: 2) */}
+      <div className="config-container">
+        {activeTab === 'stats' ? (
+          <ConfigPanel 
+            config={statsConfig} 
+            onChange={(newConfig) => setStatsConfig(newConfig as CardConfig)}
+            onRefresh={handleRefresh}
+          />
+        ) : activeTab === 'streak' ? (
+          <ConfigPanel 
+            config={streakConfig} 
+            onChange={(newConfig) => setStreakConfig(newConfig as StreakConfig)} 
+            isStreak 
+            onRefresh={handleRefresh}
+          />
+        ) : (
+          <ConfigPanel 
+            config={languagesConfig} 
+            onChange={(newConfig) => setLanguagesConfig(newConfig as LanguagesConfig)} 
+            isLanguages 
+            onRefresh={handleRefresh}
+          />
+        )}
+      </div>
     </div>
   );
 }

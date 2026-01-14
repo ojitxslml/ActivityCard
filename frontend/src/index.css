@@ -36,12 +36,20 @@ input[type="text"], input[type="number"], select {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 16px; /* Prevents zoom on iOS when focusing */
   width: 100%;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  min-height: 44px; /* Touch-friendly minimum height */
+}
+
+@media (min-width: 768px) {
+  input[type="text"], input[type="number"], select {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
 }
 
 input[type="text"]:focus, select:focus {
@@ -52,21 +60,79 @@ input[type="text"]:focus, select:focus {
 .layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  gap: 1rem;
-  padding: 1rem;
+  min-height: 100vh;
+  height: auto;
+  gap: 0.75rem;
+  padding: 0.75rem;
   max-width: 1400px;
   margin: 0 auto;
-  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    gap: 1rem;
+    padding: 1rem;
+  }
 }
 
 @media (min-width: 1024px) {
   .layout {
     display: grid;
     grid-template-columns: 350px 1fr;
-    grid-template-rows: 100%;
+    grid-template-rows: auto 1fr;
     gap: 2rem;
     padding: 2rem;
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+/* Header Panel */
+.header-panel {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .header-panel {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
+
+/* Preview Container - Shows FIRST on mobile (order: 2), RIGHT on desktop */
+.preview-container {
+  order: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .preview-container {
+    grid-column: 2;
+    grid-row: 2;
+    order: unset;
+  }
+}
+
+/* Config Container - Shows SECOND on mobile (order: 3), LEFT on desktop */
+.config-container {
+  order: 3;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .config-container {
+    grid-column: 1;
+    grid-row: 2;
+    order: unset;
   }
 }
 
@@ -74,13 +140,26 @@ input[type="text"]:focus, select:focus {
   background: var(--bg-panel);
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  /* Let flex parent control height */
+  gap: 1rem;
   flex: 1;
   min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .panel {
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
 }
 
 /* New class for scrollable content within panel */
@@ -88,20 +167,40 @@ input[type="text"]:focus, select:focus {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  padding-right: 0.5rem;
+  padding-right: 0.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+@media (min-width: 768px) {
+  .panel-content {
+    padding-right: 0.5rem;
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .panel-content {
+    gap: 1.5rem;
+  }
 }
 
 .panel-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .panel-title {
+    font-size: 1.25rem;
+  }
 }
 
 .control-group {
@@ -111,9 +210,15 @@ input[type="text"]:focus, select:focus {
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .label {
+    font-size: 0.875rem;
+  }
 }
 
 .preview-area {
@@ -124,22 +229,47 @@ input[type="text"]:focus, select:focus {
   background: radial-gradient(circle at center, #27272a 0%, #09090b 100%);
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
-  padding: 2rem;
+  padding: 1rem;
   position: relative;
-  min-height: 400px;
+  min-height: 250px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .preview-area {
+    padding: 1.5rem;
+    min-height: 350px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .preview-area {
+    padding: 2rem;
+    min-height: 400px;
+  }
 }
 
 .btn {
   background: var(--accent);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1rem;
   border-radius: 8px;
   font-weight: 500;
+  font-size: 0.9rem;
   transition: background 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   justify-content: center;
+  min-height: 44px; /* Touch-friendly minimum height */
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
 }
 
 .btn:hover {
@@ -163,12 +293,20 @@ input[type="text"]:focus, select:focus {
 .checkbox-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
   background: var(--bg-input);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
+  min-height: 44px; /* Touch-friendly minimum height */
+}
+
+@media (min-width: 768px) {
+  .checkbox-wrapper {
+    gap: 0.75rem;
+    padding: 0.5rem;
+  }
 }
 
 .checkbox-wrapper:hover {
@@ -179,10 +317,18 @@ input[type="text"]:focus, select:focus {
   width: 1.25rem;
   height: 1.25rem;
   accent-color: var(--accent);
+  flex-shrink: 0; /* Prevent checkbox from shrinking on mobile */
 }
 
-.checkbox-wrapper input[type="checkbox"]:checked + span {
-  color: var(--text-primary);
+.checkbox-wrapper span {
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .checkbox-wrapper span {
+    font-size: 1rem;
+  }
 }
 
 .copy-actions {
