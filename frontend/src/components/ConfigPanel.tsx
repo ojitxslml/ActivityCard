@@ -71,7 +71,7 @@ const Section = ({ title, icon: Icon, children, defaultOpen = true }: any) => {
   );
 }
 
-export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false, isLanguages = false, onRefresh }) => {
+export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false, isLanguages: _isLanguages = false, onRefresh }) => {
   
   const update = (key: string, value: any) => {
     onChange({ ...config, [key]: value });
