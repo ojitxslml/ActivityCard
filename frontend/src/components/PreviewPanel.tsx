@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 import { Copy, Check, ExternalLink, Download, Loader2 } from 'lucide-react';
 import type { CardConfig } from '../types';
 import type { StreakConfig } from '../types/streak';
+import type { LanguagesConfig } from '../types/languages';
 import { buildStatsUrl, generateMarkdown } from '../utils/urlBuilder';
 import { buildStreakUrl, generateStreakMarkdown } from '../utils/streakUrlBuilder';
+import { buildLanguagesUrl, generateLanguagesMarkdown } from '../utils/languagesUrlBuilder';
 
 interface PreviewPanelProps {
-  config: CardConfig | StreakConfig;
+  config: CardConfig | StreakConfig | LanguagesConfig;
   isStreak?: boolean;
+  isLanguages?: boolean;
   refreshKey?: number;
 }
 
-export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = false, refreshKey = 0 }) => {
+export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = false, isLanguages = false, refreshKey = 0 }) => {
   const [copiedMd, setCopiedMd] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Reset error when url changes
-  const url = isStreak 
+  const url = isLanguages
+    ? buildLanguagesUrl(config as LanguagesConfig)
+    : isStreak 
     ? buildStreakUrl(config as StreakConfig)
     : buildStatsUrl(config as CardConfig);
     
@@ -32,7 +37,9 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
      setIsLoading(true);
   }, [url, refreshKey]); // Fixed: depend on url and refreshKey instead of displayUrl
 
-  const markdown = isStreak
+  const markdown = isLanguages
+    ? generateLanguagesMarkdown(config as LanguagesConfig)
+    : isStreak
     ? generateStreakMarkdown(config as StreakConfig)
     : generateMarkdown(config as CardConfig);
 
@@ -78,7 +85,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
               )}
               <img 
                 src={displayUrl} 
-                alt={isStreak ? "GitHub Streak" : "GitHub Stats"}
+                alt={isLanguages ? "Top Languages" : isStreak ? "GitHub Streak" : "GitHub Stats"}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 style={{ 
@@ -93,7 +100,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
             </div>
           ) : (
             <div style={{ textAlign: 'center', color: '#ef4444' }}>
-              <p style={{ fontWeight: 600 }}>Failed to load {isStreak ? 'streak' : 'stats'} card</p>
+              <p style={{ fontWeight: 600 }}>Failed to load {isLanguages ? 'languages' : isStreak ? 'streak' : 'stats'} card</p>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                 The external service might be down or the username is invalid.
               </p>
@@ -104,7 +111,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ config, isStreak = f
           )
         ) : (
           <div style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>
-            <p>Enter a GitHub username to see the {isStreak ? 'streak' : 'stats'} card.</p>
+            <p>Enter a GitHub username to see the {isLanguages ? 'languages' : isStreak ? 'streak' : 'stats'} card.</p>
           </div>
         )}
       </div>

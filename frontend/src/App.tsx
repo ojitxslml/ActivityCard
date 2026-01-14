@@ -3,10 +3,11 @@ import { ConfigPanel } from './components/ConfigPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import type { CardConfig } from './types';
 import type { StreakConfig } from './types/streak';
+import type { LanguagesConfig } from './types/languages';
 import { Github } from 'lucide-react';
-import { saveStatsConfig, loadStatsConfig, saveStreakConfig, loadStreakConfig } from './utils/localStorage';
+import { saveStatsConfig, loadStatsConfig, saveStreakConfig, loadStreakConfig, saveLanguagesConfig, loadLanguagesConfig } from './utils/localStorage';
 
-type TabType = 'stats' | 'streak';
+type TabType = 'stats' | 'streak' | 'languages';
 
 const defaultStatsConfig: CardConfig = {
   username: '',
@@ -38,6 +39,17 @@ const defaultStreakConfig: StreakConfig = {
   longest_streak_color: '#89ddff',
 };
 
+const defaultLanguagesConfig: LanguagesConfig = {
+  username: '',
+  theme: 'default',
+  hide_border: true,
+  hide_title: false,
+  bg_color: '#1a1b27',
+  title_color: '#0bc1d9',
+  text_color: '#a9b1d6',
+  border_color: '#0bc1d9',
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   
@@ -52,6 +64,11 @@ function App() {
     return saved || defaultStreakConfig;
   });
 
+  const [languagesConfig, setLanguagesConfig] = useState<LanguagesConfig>(() => {
+    const saved = loadLanguagesConfig();
+    return saved || defaultLanguagesConfig;
+  });
+
   // Save to localStorage whenever configs change
   useEffect(() => {
     saveStatsConfig(statsConfig);
@@ -61,30 +78,29 @@ function App() {
     saveStreakConfig(streakConfig);
   }, [streakConfig]);
 
+  useEffect(() => {
+    saveLanguagesConfig(languagesConfig);
+  }, [languagesConfig]);
+
   // Sync username and theme between configs when switching tabs
   const handleTabChange = (newTab: TabType) => {
+    const currentConfig = activeTab === 'stats' ? statsConfig : activeTab === 'streak' ? streakConfig : languagesConfig;
+    
     if (newTab === 'streak') {
       const updates: Partial<StreakConfig> = {};
-      if (statsConfig.username !== streakConfig.username) {
-        updates.username = statsConfig.username;
-      }
-      if (statsConfig.theme !== streakConfig.theme) {
-        updates.theme = statsConfig.theme;
-      }
-      if (Object.keys(updates).length > 0) {
-        setStreakConfig({ ...streakConfig, ...updates });
-      }
+      if (currentConfig.username !== streakConfig.username) updates.username = currentConfig.username;
+      if (currentConfig.theme !== streakConfig.theme) updates.theme = currentConfig.theme;
+      if (Object.keys(updates).length > 0) setStreakConfig({ ...streakConfig, ...updates });
     } else if (newTab === 'stats') {
       const updates: Partial<CardConfig> = {};
-      if (streakConfig.username !== statsConfig.username) {
-        updates.username = streakConfig.username;
-      }
-      if (streakConfig.theme !== statsConfig.theme) {
-        updates.theme = statsConfig.theme;
-      }
-      if (Object.keys(updates).length > 0) {
-        setStatsConfig({ ...statsConfig, ...updates });
-      }
+      if (currentConfig.username !== statsConfig.username) updates.username = currentConfig.username;
+      if (currentConfig.theme !== statsConfig.theme) updates.theme = currentConfig.theme;
+      if (Object.keys(updates).length > 0) setStatsConfig({ ...statsConfig, ...updates });
+    } else if (newTab === 'languages') {
+      const updates: Partial<LanguagesConfig> = {};
+      if (currentConfig.username !== languagesConfig.username) updates.username = currentConfig.username;
+      if (currentConfig.theme !== languagesConfig.theme) updates.theme = currentConfig.theme;
+      if (Object.keys(updates).length > 0) setLanguagesConfig({ ...languagesConfig, ...updates });
     }
     setActiveTab(newTab);
   };
@@ -122,6 +138,12 @@ function App() {
             >
               Streak Card
             </button>
+            <button 
+              className={activeTab === 'languages' ? 'btn' : 'btn btn-secondary'}
+              onClick={() => handleTabChange('languages')}
+            >
+              Languages Card
+            </button>
           </div>
         </div>
         
@@ -132,11 +154,18 @@ function App() {
               onChange={(newConfig) => setStatsConfig(newConfig as CardConfig)}
               onRefresh={handleRefresh}
             />
-          ) : (
+          ) : activeTab === 'streak' ? (
             <ConfigPanel 
               config={streakConfig} 
               onChange={(newConfig) => setStreakConfig(newConfig as StreakConfig)} 
               isStreak 
+              onRefresh={handleRefresh}
+            />
+          ) : (
+            <ConfigPanel 
+              config={languagesConfig} 
+              onChange={(newConfig) => setLanguagesConfig(newConfig as LanguagesConfig)} 
+              isLanguages 
               onRefresh={handleRefresh}
             />
           )}
@@ -144,8 +173,9 @@ function App() {
       </div>
 
       <PreviewPanel 
-        config={activeTab === 'stats' ? statsConfig : streakConfig} 
+        config={activeTab === 'stats' ? statsConfig : activeTab === 'streak' ? streakConfig : languagesConfig} 
         isStreak={activeTab === 'streak'}
+        isLanguages={activeTab === 'languages'}
         refreshKey={refreshKey}
       />
     </div>

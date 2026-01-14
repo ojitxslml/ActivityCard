@@ -23,3 +23,15 @@ export interface UserStats {
   contributedTo: number;
   rank: string;
 }
+
+export interface LanguageStats {
+  name: string;
+  bytes: number;
+  percentage: number;
+  color: string;
+}
+
+export interface TopLanguages {
+  username: string;
+  languages: LanguageStats[];
+}

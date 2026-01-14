@@ -3,11 +3,13 @@ import { HexColorPicker } from 'react-colorful';
 import { Palette, Layout, EyeOff, FileCode, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import type { CardConfig } from '../types';
 import type { StreakConfig } from '../types/streak';
+import type { LanguagesConfig } from '../types/languages';
 
 interface ConfigPanelProps {
-  config: CardConfig | StreakConfig;
-  onChange: (newConfig: CardConfig | StreakConfig) => void;
+  config: CardConfig | StreakConfig | LanguagesConfig;
+  onChange: (newConfig: CardConfig | StreakConfig | LanguagesConfig) => void;
   isStreak?: boolean;
+  isLanguages?: boolean;
   onRefresh?: () => void;
 }
 
@@ -69,7 +71,7 @@ const Section = ({ title, icon: Icon, children, defaultOpen = true }: any) => {
   );
 }
 
-export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false, onRefresh }) => {
+export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isStreak = false, isLanguages = false, onRefresh }) => {
   
   const update = (key: string, value: any) => {
     onChange({ ...config, [key]: value });
