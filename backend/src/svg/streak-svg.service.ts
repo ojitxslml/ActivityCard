@@ -20,14 +20,16 @@ interface StreakConfig {
 export class StreakSvgService {
   generateStreakCard(stats: StreakStats, config: StreakConfig, contributions?: any[]): string {
     const theme = this.getTheme(config);
-    // Support both normal (495px) and wide (854px) widths
+    const dateRangeYears = config.date_range_years || 1;
+    
+    // Always use fixed width (normal or wide)
     const width = config.width === 'wide' ? 854 : 495;
+    
     const baseHeight = config.hide_title ? 165 : 195;
     // Add more height for wide cards to accommodate larger contribution graph
     const extraHeight = width > 600 ? 120 : 100;
     const height = baseHeight + extraHeight;
     const titleOffset = config.hide_title ? 0 : 30;
-    const dateRangeYears = config.date_range_years || 1;
 
     // Use real contributions if provided, otherwise generate mock data
     const contribData = contributions && contributions.length > 0 
@@ -54,24 +56,9 @@ export class StreakSvgService {
     }
   </style>
   
-  <rect 
-    data-testid="card-bg" 
-    x="0.5" 
-    y="0.5" 
-    rx="4.5" 
-    height="99%" 
-    stroke="#${theme.stroke_color}" 
-    width="${width - 1}" 
-    fill="#${theme.bg_color}" 
-    stroke-opacity="${config.hide_border ? '0' : '1'}"
-  />
+  ${!config.hide_border ? `<rect x="0.5" y="0.5" rx="4.5" height="99%" stroke="#${theme.stroke_color}" width="${width - 1}" fill="#${theme.bg_color}" stroke-opacity="1"/>` : `<rect width="${width}" height="${height}" fill="#${theme.bg_color}"/>`}
   
-  ${!config.hide_title ? `
-  <!-- Title -->
-  <g transform="translate(25, 30)">
-    <text x="0" y="0" class="header">${stats.username}'s GitHub Streak</text>
-  </g>
-  ` : ''}
+  ${!config.hide_title ? `<text x="25" y="35" class="header">@${stats.username}'s GitHub Streak</text>` : ''}
   
   <!-- Stats Container -->
   <g transform="translate(${width / 2}, ${65 + titleOffset})">
@@ -159,16 +146,14 @@ export class StreakSvgService {
   private generateContributionGraph(contributions: any[], theme: any, yOffset: number, width: number, dateRangeYears: number = 1): string {
     const weeks = this.groupContributionsByWeek(contributions, dateRangeYears);
     
-    // Use more weeks for wide cards to fill the space better
-    const isWide = width > 600;
-    const maxWeeks = isWide ? 65 : 53; // Show more weeks in wide format
-    
     // Larger cells only for wide cards
+    const isWide = width > 600;
     const cellSize = isWide ? 8 : 6;
     const cellGap = isWide ? 3 : 2;
     const borderRadius = isWide ? 1.5 : 1;
     
-    const weeksToShow = weeks.slice(-maxWeeks);
+    // Show all weeks (don't slice to show complete year grid like GitHub)
+    const weeksToShow = weeks;
     
     const graphWidth = weeksToShow.length * (cellSize + cellGap);
     const startX = (width - graphWidth) / 2; // Center the graph
@@ -178,6 +163,11 @@ export class StreakSvgService {
     
     weeksToShow.forEach((week, weekIndex) => {
       week.forEach((day, dayIndex) => {
+        // Skip empty padding squares (like GitHub does)
+        if (!day.date) {
+          return;
+        }
+        
         const x = startX + weekIndex * (cellSize + cellGap);
         const y = 20 + dayIndex * (cellSize + cellGap);
         const level = this.getContributionLevel(day.count);
@@ -194,15 +184,23 @@ export class StreakSvgService {
   private groupContributionsByWeek(contributions: any[], dateRangeYears: number = 1): any[][] {
     const weeks: any[][] = [];
     
-    // ALWAYS show the last 365 days (rolling year) in the graph
-    // The date_range_years parameter is only used for fetching data from GitHub
-    // to calculate streaks accurately, but the graph always displays the same width
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Calculate the date 365 days ago from today
-    const oneYearAgo = new Date(today);
-    oneYearAgo.setDate(oneYearAgo.getDate() - 364); // 365 days total including today
+    let yearStart: Date;
+    let yearEnd: Date;
+    
+    if (dateRangeYears === 1) {
+      // For 1 year: show current calendar year (Jan 1 - Dec 31 of current year)
+      const currentYear = today.getFullYear();
+      yearStart = new Date(currentYear, 0, 1);
+      yearEnd = new Date(currentYear, 11, 31);
+    } else {
+      // For 2+ years: show rolling 365-day window (last 365 days ending today)
+      yearStart = new Date(today);
+      yearStart.setDate(yearStart.getDate() - 364); // 365 days total including today
+      yearEnd = new Date(today);
+    }
     
     // Create a map of existing contributions for quick lookup
     const contribMap = new Map<string, number>();
@@ -210,21 +208,20 @@ export class StreakSvgService {
       contribMap.set(c.date, c.count);
     });
     
-    // Generate all days for the last 365 days in chronological order
+    // Generate all days from yearStart to yearEnd
     const allDays: any[] = [];
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(oneYearAgo);
-      date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
-      
+    let currentDate = new Date(yearStart);
+    
+    while (currentDate <= yearEnd) {
+      const dateStr = currentDate.toISOString().split('T')[0];
       allDays.push({
         date: dateStr,
-        count: contribMap.get(dateStr) || 0, // Use 0 for missing days (shown as gray)
+        count: contribMap.get(dateStr) || 0,
       });
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     // Group into weeks starting from Sunday
-    // The graph will display left to right: 365 days ago -> today
     let currentWeek: any[] = [];
     const firstDate = new Date(allDays[0].date);
     const firstDayOfWeek = firstDate.getDay(); // 0 = Sunday, 6 = Saturday
@@ -243,16 +240,14 @@ export class StreakSvgService {
       currentWeek.push(day);
     });
     
-    // Push the last week if it has any days
+    // Push the last week and fill remaining days to complete the week
     if (currentWeek.length > 0) {
-      // Fill remaining days to complete the week
       while (currentWeek.length < 7) {
         currentWeek.push({ date: '', count: 0 });
       }
       weeks.push(currentWeek);
     }
     
-    // Return weeks for the last 365 days (always ~52-53 weeks)
     return weeks;
   }
 
