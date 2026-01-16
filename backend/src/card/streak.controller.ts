@@ -27,7 +27,10 @@ export class StreakController {
       const years = dateRangeYears ? parseInt(dateRangeYears, 10) : 1;
       const stats = await this.streakService.getStreakStats(username, shouldRefresh, years);
       const contributions = await this.streakService.getContributions(username, shouldRefresh, years);
-      const svg = this.streakSvgService.generateStreakCard(stats, config, contributions);
+      
+      // Pass date_range_years to the SVG service
+      const configWithYears = { ...config, date_range_years: years };
+      const svg = this.streakSvgService.generateStreakCard(stats, configWithYears, contributions);
 
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Cache-Control', 'public, max-age=300');

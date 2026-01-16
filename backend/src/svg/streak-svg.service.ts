@@ -13,6 +13,7 @@ interface StreakConfig {
   curr_streak_color?: string;
   longest_streak_color?: string;
   width?: 'normal' | 'wide';
+  date_range_years?: number;
 }
 
 @Injectable()
@@ -26,6 +27,7 @@ export class StreakSvgService {
     const extraHeight = width > 600 ? 120 : 100;
     const height = baseHeight + extraHeight;
     const titleOffset = config.hide_title ? 0 : 30;
+    const dateRangeYears = config.date_range_years || 1;
 
     // Use real contributions if provided, otherwise generate mock data
     const contribData = contributions && contributions.length > 0 
@@ -105,7 +107,7 @@ export class StreakSvgService {
     </g>
   </g>
   
-  ${this.generateContributionGraph(contribData, theme, 175 + titleOffset, width)}
+  ${this.generateContributionGraph(contribData, theme, 175 + titleOffset, width, dateRangeYears)}
 </svg>`.trim();
   }
 
@@ -154,8 +156,8 @@ export class StreakSvgService {
     return contributions;
   }
 
-  private generateContributionGraph(contributions: any[], theme: any, yOffset: number, width: number): string {
-    const weeks = this.groupContributionsByWeek(contributions);
+  private generateContributionGraph(contributions: any[], theme: any, yOffset: number, width: number, dateRangeYears: number = 1): string {
+    const weeks = this.groupContributionsByWeek(contributions, dateRangeYears);
     
     // Use more weeks for wide cards to fill the space better
     const isWide = width > 600;
@@ -189,32 +191,69 @@ export class StreakSvgService {
     return svg;
   }
 
-  private groupContributionsByWeek(contributions: any[]): any[][] {
+  private groupContributionsByWeek(contributions: any[], dateRangeYears: number = 1): any[][] {
     const weeks: any[][] = [];
+    
+    // ALWAYS show the last 365 days (rolling year) in the graph
+    // The date_range_years parameter is only used for fetching data from GitHub
+    // to calculate streaks accurately, but the graph always displays the same width
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Calculate the date 365 days ago from today
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setDate(oneYearAgo.getDate() - 364); // 365 days total including today
+    
+    // Create a map of existing contributions for quick lookup
+    const contribMap = new Map<string, number>();
+    contributions.forEach(c => {
+      contribMap.set(c.date, c.count);
+    });
+    
+    // Generate all days for the last 365 days in chronological order
+    const allDays: any[] = [];
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(oneYearAgo);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      allDays.push({
+        date: dateStr,
+        count: contribMap.get(dateStr) || 0, // Use 0 for missing days (shown as gray)
+      });
+    }
+    
+    // Group into weeks starting from Sunday
+    // The graph will display left to right: 365 days ago -> today
     let currentWeek: any[] = [];
+    const firstDate = new Date(allDays[0].date);
+    const firstDayOfWeek = firstDate.getDay(); // 0 = Sunday, 6 = Saturday
     
-    // Start from Sunday
-    const firstDate = new Date(contributions[0]?.date || new Date());
-    const firstDayOfWeek = firstDate.getDay();
-    
-    // Fill empty days at the beginning
+    // Fill empty days at the beginning to align with Sunday
     for (let i = 0; i < firstDayOfWeek; i++) {
       currentWeek.push({ date: '', count: 0 });
     }
     
-    contributions.forEach((contrib) => {
+    // Add all days in chronological order
+    allDays.forEach((day) => {
       if (currentWeek.length === 7) {
         weeks.push(currentWeek);
         currentWeek = [];
       }
-      currentWeek.push(contrib);
+      currentWeek.push(day);
     });
     
+    // Push the last week if it has any days
     if (currentWeek.length > 0) {
+      // Fill remaining days to complete the week
+      while (currentWeek.length < 7) {
+        currentWeek.push({ date: '', count: 0 });
+      }
       weeks.push(currentWeek);
     }
     
-    return weeks.slice(-53); // Last 53 weeks
+    // Return weeks for the last 365 days (always ~52-53 weeks)
+    return weeks;
   }
 
   private getContributionLevel(count: number): number {
