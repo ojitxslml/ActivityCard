@@ -128,6 +128,22 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, onChange, isSt
               <option value="wide">Wide (854px)</option>
             </select>
           </div>
+          {isStreak && (
+            <div className="control-group">
+              <label className="label">Date Range</label>
+              <select 
+                value={'date_range_years' in config ? config.date_range_years || 1 : 1} 
+                onChange={(e) => update('date_range_years', parseInt(e.target.value, 10))}
+              >
+                <option value="1">Last Year</option>
+                <option value="2">Last 2 Years</option>
+                <option value="3">Last 3 Years</option>
+                <option value="5">Last 5 Years</option>
+                <option value="10">Last 10 Years</option>
+                <option value="20">All Time (since 2004)</option>
+              </select>
+            </div>
+          )}
           {!isStreak && (
             <div className="control-group">
               <label className="label">Card Title (Optional)</label>

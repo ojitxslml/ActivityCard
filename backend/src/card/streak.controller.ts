@@ -14,6 +14,7 @@ export class StreakController {
   async getStreak(
     @Query('username') username: string,
     @Query('refresh') refresh: string,
+    @Query('date_range_years') dateRangeYears: string,
     @Query() config: any,
     @Res() res: Response,
   ) {
@@ -23,8 +24,9 @@ export class StreakController {
       }
 
       const shouldRefresh = refresh === 'true';
-      const stats = await this.streakService.getStreakStats(username, shouldRefresh);
-      const contributions = await this.streakService.getContributions(username, shouldRefresh);
+      const years = dateRangeYears ? parseInt(dateRangeYears, 10) : 1;
+      const stats = await this.streakService.getStreakStats(username, shouldRefresh, years);
+      const contributions = await this.streakService.getContributions(username, shouldRefresh, years);
       const svg = this.streakSvgService.generateStreakCard(stats, config, contributions);
 
       res.setHeader('Content-Type', 'image/svg+xml');

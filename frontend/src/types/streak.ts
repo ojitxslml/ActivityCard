@@ -10,4 +10,5 @@ export interface StreakConfig {
   curr_streak_color?: string;
   longest_streak_color?: string;
   width?: 'normal' | 'wide';
+  date_range_years?: number;
 }

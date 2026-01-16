@@ -12,8 +12,8 @@ export class StreakService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async getStreakStats(username: string, refresh = false): Promise<StreakStats> {
-    const cacheKey = `streak_stats_${username}`;
+  async getStreakStats(username: string, refresh = false, dateRangeYears = 1): Promise<StreakStats> {
+    const cacheKey = `streak_stats_${username}_${dateRangeYears}y`;
     
     if (!refresh) {
       const cached = await this.cacheManager.get<StreakStats>(cacheKey);
@@ -22,7 +22,7 @@ export class StreakService {
       }
     }
 
-    const contributions = await this.getContributions(username, refresh);
+    const contributions = await this.getContributions(username, refresh, dateRangeYears);
     const stats = this.calculateStreaks(username, contributions);
     
     // Cache for 5 minutes (300 seconds)
@@ -31,8 +31,8 @@ export class StreakService {
     return stats;
   }
 
-  async getContributions(username: string, refresh = false): Promise<ContributionDay[]> {
-    const cacheKey = `contributions_${username}`;
+  async getContributions(username: string, refresh = false, dateRangeYears = 1): Promise<ContributionDay[]> {
+    const cacheKey = `contributions_${username}_${dateRangeYears}y`;
     
     if (!refresh) {
       const cached = await this.cacheManager.get<ContributionDay[]>(cacheKey);
@@ -41,7 +41,7 @@ export class StreakService {
       }
     }
 
-    const contributions = await this.fetchContributions(username);
+    const contributions = await this.fetchContributions(username, dateRangeYears);
     
     // Cache for 5 minutes (300 seconds)
     await this.cacheManager.set(cacheKey, contributions, 300000);
@@ -49,11 +49,11 @@ export class StreakService {
     return contributions;
   }
 
-  private async fetchContributions(username: string): Promise<ContributionDay[]> {
+  private async fetchContributions(username: string, dateRangeYears = 1): Promise<ContributionDay[]> {
     // GitHub GraphQL API only returns last year by default
-    // We need to fetch multiple years to handle long streaks
+    // We fetch the specified number of years to optimize the query
     const currentYear = new Date().getFullYear();
-    const startYear = 2020; // Fetch from 2020 onwards to capture very long streaks
+    const startYear = currentYear - dateRangeYears + 1; // Calculate start year based on range
     
     try {
       // Create all requests to execute in parallel

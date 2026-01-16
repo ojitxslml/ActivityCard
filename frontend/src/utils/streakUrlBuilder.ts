@@ -24,6 +24,11 @@ export function buildStreakUrl(config: StreakConfig): string {
     params.append("width", config.width);
   }
 
+  // Date range option
+  if (config.date_range_years && config.date_range_years !== 1) {
+    params.append("date_range_years", config.date_range_years.toString());
+  }
+
   return `${baseUrl}?${params.toString()}`;
 }
 
