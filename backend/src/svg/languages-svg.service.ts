@@ -58,6 +58,9 @@ export class LanguagesSvgService {
     fill="#${theme.bg_color}" 
     stroke-opacity="${hideBorder ? '0' : '1'}"
   />
+
+  ${this.getBackgroundDesign(theme.title_color, width, height)}
+
   
   ${!hideTitle ? `<g transform="translate(25, 30)">
     <text x="0" y="0" class="header">${config.custom_title || `${data.username}'s Top Languages`}</text>
@@ -149,5 +152,42 @@ export class LanguagesSvgService {
       text_color: config.text_color || '434d58',
       border_color: config.border_color || 'e4e2e2',
     };
+  }
+
+  private getBackgroundDesign(color: string, width: number, height: number): string {
+    // Epic "Tech" design with angular shapes and dynamic feel
+    return `
+    <g transform="translate(${width}, 0)">
+      <path d="M-50 ${height} L50 ${height} L50 0 L-100 0 Z" fill="#${color}" opacity="0.03" />
+      <path d="M-30 ${height} L50 ${height} L50 100 L-80 0 L-150 0 Z" fill="#${color}" opacity="0.03" />
+      
+      <!-- Tech lines -->
+      <g transform="translate(-80, 0)" stroke="#${color}" stroke-width="1.5" stroke-opacity="0.1">
+         <line x1="20" y1="0" x2="100" y2="80" />
+         <line x1="50" y1="0" x2="130" y2="80" />
+         <line x1="0" y1="40" x2="60" y2="100" />
+      </g>
+      
+      <!-- Decorative dots -->
+      <g fill="#${color}" fill-opacity="0.15">
+        <circle cx="-30" cy="50" r="2" />
+        <circle cx="-15" cy="65" r="2" />
+        <circle cx="-45" cy="35" r="2" />
+        
+        <circle cx="-60" cy="120" r="1.5" />
+        <circle cx="-45" cy="135" r="1.5" />
+      </g>
+      
+      <!-- Large angular accent -->
+      <path d="M0 0 L-120 0 L-40 80 L0 40 Z" fill="url(#grad1)" opacity="0.05" />
+    </g>
+    
+    <defs>
+      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#${color};stop-opacity:0.2" />
+        <stop offset="100%" style="stop-color:#${color};stop-opacity:0" />
+      </linearGradient>
+    </defs>
+    `;
   }
 }
