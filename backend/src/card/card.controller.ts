@@ -18,7 +18,7 @@ export class CardController {
       
       res.setHeader('Content-Type', 'image/svg+xml');
       // Improved cache headers for GitHub's CDN
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=43200');
       res.status(HttpStatus.OK).send(svg);
     } catch (error) {
       const width = config.width === 'wide' ? 854 : 495;

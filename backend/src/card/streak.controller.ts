@@ -38,10 +38,10 @@ export class StreakController {
       );
 
       res.setHeader('Content-Type', 'image/svg+xml');
-      // Improved cache headers for GitHub's CDN
-      // max-age=300 (5 min), stale-while-revalidate=3600 (1 hour)
-      // This allows GitHub to serve stale content while revalidating in background
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      // Improved cache headers for GitHub's CDN - Very aggressive
+      // max-age=300 (5 min), stale-while-revalidate=43200 (12 hours)
+      // This allows GitHub to serve stale content for 12h while revalidating in background
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=43200');
       res.status(HttpStatus.OK).send(svg);
     } catch (error) {
       const width = config.width === 'wide' ? 854 : 495;

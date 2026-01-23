@@ -35,9 +35,9 @@ export class StreakService {
       stats.contributions = contributions;
     }
     
-    // Cache for 1 hour (3600 seconds) - Extended from 5 minutes for better performance
-    // GitHub data doesn't change frequently, so longer cache is safe
-    await this.cacheManager.set(cacheKey, stats, 3600000);
+    // Cache for 6 hours (21600 seconds) - Very aggressive caching to avoid timeouts
+    // GitHub contribution data doesn't change frequently, so this is safe
+    await this.cacheManager.set(cacheKey, stats, 21600000);
     
     return stats;
   }
@@ -54,8 +54,8 @@ export class StreakService {
 
     const contributions = await this.fetchContributions(username, dateRangeYears);
     
-    // Cache for 1 hour (3600 seconds) - Extended from 5 minutes for better performance
-    await this.cacheManager.set(cacheKey, contributions, 3600000);
+    // Cache for 6 hours (21600 seconds) - Very aggressive caching
+    await this.cacheManager.set(cacheKey, contributions, 21600000);
     
     return contributions;
   }
@@ -95,12 +95,12 @@ export class StreakService {
           ? new Date().toISOString() 
           : `${year}-12-31T23:59:59Z`;
         
+        // Optimized: removed totalContributions to reduce payload size
         const query = `
           query($username: String!, $from: DateTime!, $to: DateTime!) {
             user(login: $username) {
               contributionsCollection(from: $from, to: $to) {
                 contributionCalendar {
-                  totalContributions
                   weeks {
                     contributionDays {
                       date
@@ -113,7 +113,7 @@ export class StreakService {
           }
         `;
 
-        // Add promise to array (don't await yet)
+        // Add promise to array with aggressive timeout (4s per request)
         yearRequests.push(
           firstValueFrom(
             this.httpService.post(
@@ -131,6 +131,7 @@ export class StreakService {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${process.env.GITHUB_TOKEN || ''}`,
                 },
+                timeout: 4000, // 4 second timeout per request
               },
             ),
           )
@@ -140,8 +141,9 @@ export class StreakService {
       // Execute all requests in parallel
       const responses = await Promise.all(yearRequests);
       
-      // Process all responses
-      const allDays: ContributionDay[] = [];
+      // Process all responses efficiently - use Map to avoid duplicates from the start
+      const daysMap = new Map<string, ContributionDay>();
+      
       responses.forEach(response => {
         const user = response.data?.data?.user;
         
@@ -155,7 +157,7 @@ export class StreakService {
         if (weeks) {
           weeks.forEach((week: any) => {
             week.contributionDays.forEach((day: any) => {
-              allDays.push({
+              daysMap.set(day.date, {
                 date: day.date,
                 count: day.contributionCount,
               });
@@ -164,12 +166,8 @@ export class StreakService {
         }
       });
 
-      // Remove duplicates and sort
-      const uniqueDays = Array.from(
-        new Map(allDays.map(day => [day.date, day])).values()
-      );
-
-      return uniqueDays.sort((a, b) => 
+      // Convert Map to sorted array
+      return Array.from(daysMap.values()).sort((a, b) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
