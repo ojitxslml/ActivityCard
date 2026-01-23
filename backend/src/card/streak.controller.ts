@@ -25,15 +25,23 @@ export class StreakController {
 
       const shouldRefresh = refresh === 'true';
       const years = dateRangeYears ? parseInt(dateRangeYears, 10) : 1;
-      const stats = await this.streakService.getStreakStats(username, shouldRefresh, years);
-      const contributions = await this.streakService.getContributions(username, shouldRefresh, years);
+      
+      // Get stats with contributions included (optimized - no double fetch)
+      const stats = await this.streakService.getStreakStats(username, shouldRefresh, years, true);
       
       // Pass date_range_years to the SVG service
       const configWithYears = { ...config, date_range_years: years };
-      const svg = this.streakSvgService.generateStreakCard(stats, configWithYears, contributions);
+      const svg = this.streakSvgService.generateStreakCard(
+        stats, 
+        configWithYears, 
+        stats.contributions || []
+      );
 
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.setHeader('Cache-Control', 'public, max-age=300');
+      // Improved cache headers for GitHub's CDN
+      // max-age=300 (5 min), stale-while-revalidate=3600 (1 hour)
+      // This allows GitHub to serve stale content while revalidating in background
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
       res.status(HttpStatus.OK).send(svg);
     } catch (error) {
       const width = config.width === 'wide' ? 854 : 495;

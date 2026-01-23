@@ -17,7 +17,8 @@ export class CardController {
       const svg = await this.cardService.generateCard(config, refresh === 'true');
       
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.setHeader('Cache-Control', 'public, max-age=300');
+      // Improved cache headers for GitHub's CDN
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
       res.status(HttpStatus.OK).send(svg);
     } catch (error) {
       const width = config.width === 'wide' ? 854 : 495;

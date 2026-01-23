@@ -13,4 +13,5 @@ export interface StreakStats {
   currentStreakEnd: string;
   longestStreakStart: string;
   longestStreakEnd: string;
+  contributions?: ContributionDay[]; // Optional: to avoid double fetching
 }

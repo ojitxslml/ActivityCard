@@ -12,7 +12,12 @@ export class StreakService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async getStreakStats(username: string, refresh = false, dateRangeYears = 1): Promise<StreakStats> {
+  async getStreakStats(
+    username: string, 
+    refresh = false, 
+    dateRangeYears = 1,
+    includeContributions = true // New parameter to include contributions in response
+  ): Promise<StreakStats> {
     const cacheKey = `streak_stats_${username}_${dateRangeYears}y`;
     
     if (!refresh) {
@@ -25,8 +30,14 @@ export class StreakService {
     const contributions = await this.getContributions(username, refresh, dateRangeYears);
     const stats = this.calculateStreaks(username, contributions);
     
-    // Cache for 5 minutes (300 seconds)
-    await this.cacheManager.set(cacheKey, stats, 300000);
+    // Include contributions in the response to avoid double fetching
+    if (includeContributions) {
+      stats.contributions = contributions;
+    }
+    
+    // Cache for 1 hour (3600 seconds) - Extended from 5 minutes for better performance
+    // GitHub data doesn't change frequently, so longer cache is safe
+    await this.cacheManager.set(cacheKey, stats, 3600000);
     
     return stats;
   }
@@ -43,17 +54,36 @@ export class StreakService {
 
     const contributions = await this.fetchContributions(username, dateRangeYears);
     
-    // Cache for 5 minutes (300 seconds)
-    await this.cacheManager.set(cacheKey, contributions, 300000);
+    // Cache for 1 hour (3600 seconds) - Extended from 5 minutes for better performance
+    await this.cacheManager.set(cacheKey, contributions, 3600000);
     
     return contributions;
   }
 
   private async fetchContributions(username: string, dateRangeYears = 1): Promise<ContributionDay[]> {
+    // GitHub GraphQL API limitation: contributionsCollection only supports up to 1 year range
+    // Therefore, we always use the parallel approach (one request per year)
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - dateRangeYears + 1;
+    
+    try {
+      return await this.fetchContributionsParallel(username, startYear, currentYear);
+    } catch (error) {
+      // Check if it's a user not found error
+      if (error.message === 'User not found' || error.response?.status === 404) {
+        throw new Error(`GitHub user not found. Please check the username.`);
+      }
+      
+      console.error('Error fetching contributions:', error.response?.data || error.message);
+      throw new Error('Failed to fetch GitHub data. Please try again later.');
+    }
+  }
+
+
+  // Parallel method: one request per year (required by GitHub API limitations)
+  private async fetchContributionsParallel(username: string, startYear: number, currentYear: number): Promise<ContributionDay[]> {
     // GitHub GraphQL API only returns last year by default
     // We fetch the specified number of years to optimize the query
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - dateRangeYears + 1; // Calculate start year based on range
     
     try {
       // Create all requests to execute in parallel
@@ -143,13 +173,7 @@ export class StreakService {
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
-      // Check if it's a user not found error
-      if (error.message === 'User not found' || error.response?.status === 404) {
-        throw new Error(`GitHub user not found. Please check the username.`);
-      }
-      
-      console.error('Error fetching contributions:', error.response?.data || error.message);
-      throw new Error('Failed to fetch GitHub data. Please try again later.');
+      throw error; // Re-throw to be handled by parent method
     }
   }
 
